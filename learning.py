@@ -1,6 +1,5 @@
 import os
 
-import PIL.Image
 import torch
 import matplotlib.pyplot as plt
 import torchvision.io
@@ -8,7 +7,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from torch import nn
-from torchvision.transforms import ToTensor, Lambda
+from torchvision.transforms import Lambda
 import torchvision.models as models
 import pandas as pd
 from torchvision.io import read_image
@@ -79,10 +78,10 @@ def test_loop(dataloader, model, loss_fn):
     with torch.no_grad():
         for X, y in dataloader:
             pred = model(X)
-            print(pred)
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
             print(f"prediction: {pred.argmax(1)}")
+            print(f"actuall: {y}")
 
     test_loss /= num_batches
     correct /= size
@@ -117,7 +116,7 @@ class CustomImageDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        img = PIL.Image.open(img_path)
+        img = Image.open(img_path)
         image = self.transform(img)
         image = image.squeeze()
         label = self.img_labels.iloc[idx, 1]
@@ -181,20 +180,20 @@ def custom_Image_run():
                                        transforms.Grayscale()])
     )
 
-    test_dataloader = DataLoader(test_data)
+    train_data, tst = get_data()
 
-    model = load()
+    test_dataloader = DataLoader(test_data, batch_size=5, shuffle=True)
+    # train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
+    model = NeuralNetwork()
+    learning_rate, batch_size, epochs = Hyperparameters()
     loss_fn = Loss_Function()
-    train_features, train_labels = next(iter(test_dataloader))
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
-    # train_features.numpy()
-    # print(train_features)
-    # arr_ = np.squeeze(train_features)  # you can give axis attribute if you wanna squeeze in specific dimension
-    # plt.imshow(arr_, 'Greys')
-    # plt.show()
+    for t in range(epochs):
+        print(f"Epoch {t+1}\n-------------------------------")
+        # train_loop(train_dataloader, model, loss_fn, optimizer)
+        test_loop(test_dataloader, model, loss_fn)
 
-
-    test_loop(test_dataloader, model, loss_fn)
 
 def main():
     # run_model()
