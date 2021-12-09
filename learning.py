@@ -40,7 +40,7 @@ def get_data():
 def Hyperparameters():
     learning_rate = 1e-3
     batch_size = 64
-    epochs = 5
+    epochs = 10
 
     return learning_rate, batch_size, epochs
 
@@ -51,8 +51,10 @@ def Loss_Function(pred= None, y = None):
 
 def save(model):
     torch.save(model, 'model.pth')
+    print(f"saved")
 
 def load():
+    print(f"loading model...")
     return torch.load('model.pth')
 
 def train_loop(dataloader, model, loss_fn, optimizer):
@@ -159,7 +161,6 @@ def run_model():
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     params = list(model.parameters())
-    print(len(params))
     print(params[0].size())
 
     for t in range(epochs):
@@ -182,9 +183,9 @@ def custom_Image_run():
 
     train_data, tst = get_data()
 
-    test_dataloader = DataLoader(test_data, batch_size=5, shuffle=True)
-    # train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
-    model = NeuralNetwork()
+    test_dataloader = DataLoader(test_data,batch_size=64, shuffle=True)
+    train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
+    model = load()
     learning_rate, batch_size, epochs = Hyperparameters()
     loss_fn = Loss_Function()
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
@@ -193,6 +194,7 @@ def custom_Image_run():
         print(f"Epoch {t+1}\n-------------------------------")
         # train_loop(train_dataloader, model, loss_fn, optimizer)
         test_loop(test_dataloader, model, loss_fn)
+    save(model)
 
 
 def main():
